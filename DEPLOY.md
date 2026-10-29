@@ -54,9 +54,14 @@ If the proxy can't pass the original host and scheme, set `BASE_URL=https://kept
 ```bash
 curl -I https://kept.example.com/              # 200
 curl -I https://kept.example.com/w/nope        # 404 with "X-Robots-Tag: noindex, nofollow"
+curl https://kept.example.com/robots.txt       # ends with "Sitemap: https://kept.example.com/sitemap.xml"
 ```
 
 Then register, create a list and open its share link in a private window: the link should use your domain and `https`.
+
+## Search engines
+
+The landing pages (`/`, `/ru/`, `/be/`), `sitemap.xml` and `robots.txt` use the same public origin as share links, so check that `robots.txt` shows your domain and `https`. Then add the site to the webmaster tools of the search engines you care about (Google Search Console, Bing Webmaster Tools, Yandex Webmaster) and submit `https://kept.example.com/sitemap.xml`. Confirming ownership with a DNS TXT record needs no changes to the app.
 
 ## Data and backups
 

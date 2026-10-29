@@ -1,7 +1,6 @@
 export default {
   brand: "Kept",
   nav: { start: "Стварыць спіс", signin: "Увайсці", mylists: "Мае спісы", signout: "Выйсці" },
-  landing: { title: "Проста вішліст." },
   auth: {
     login_title: "Уваход", register_title: "Стварыць акаўнт",
     username: "Лагін", password: "Пароль", display_name: "Ваша імя",
@@ -55,6 +54,7 @@ export default {
     how_many: "Колькі", claimed_ok: "Забраніравана", undone: "Бронь адменена",
     err_not_enough: "Не паспелі — засталося толькі {n}.", err_gone: "Гэтай броні ўжо няма.", already_taken: "Толькі што забраніравалі.", owner_cannot: "Нельга браніраваць у сваім спісе.",
     login_to_claim: "Каб забраніраваць, трэба ўвайсці. Уладальнік не даведаецца, хто гэта зрабіў.", login_and_claim: "Увайсці і забраніраваць", claimed_after_login: "Забраніравана",
+    make_own: "Зрабіць свой вішліст",
     ago: { now: "толькі што" },
   },
   plural: {
@@ -62,7 +62,7 @@ export default {
     claimed: { one: "{n} занята", few: "{n} занятыя", many: "{n} занята", other: "{n} занята" },
   },
   profile: {
-    title: "Профіль", open: "Профіль", name: "Ваша імя", name_hint: "Яго бачаць іншыя госці, калі вы браніруеце падарунак.",
+    title: "Профіль", open: "Профіль", name: "Ваша імя", name_hint: "Паказваецца на вашых спісах.",
     change_password: "Змяніць пароль", current: "Бягучы пароль", new: "Новы пароль",
     save: "Захаваць", saved: "Захавана", password_changed: "Пароль зменены",
     err_wrong: "Бягучы пароль няправільны.", err_short: "Не менш за 8 сімвалаў.",

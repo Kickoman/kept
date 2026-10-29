@@ -6,18 +6,41 @@ const DICTS = { en, ru, be };
 export const LANGS = Object.keys(DICTS);
 const KEY = "kept.lang";
 
-export function detectLang() {
+// The landing (/, /ru/, /be/) is rendered on the server in one language; its URL decides.
+const pageLang = DICTS[document.documentElement.dataset.pageLang] ? document.documentElement.dataset.pageLang : null;
+
+function savedLang() {
   try {
     const saved = localStorage.getItem(KEY);
-    if (saved && DICTS[saved]) return saved;
-  } catch (_) { /* storage unavailable */ }
+    return saved && DICTS[saved] ? saved : null;
+  } catch (_) { return null; } /* storage unavailable */
+}
+
+function inBelarus() {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone === "Europe/Minsk"; } catch (_) { return false; }
+}
+
+/** Page language, then the saved choice, then the browser (Russian in Belarus → Belarusian). */
+export function detectLang() {
+  if (pageLang) return pageLang;
+  const saved = savedLang();
+  if (saved) return saved;
   const nav = (navigator.language || "en").toLowerCase();
   if (nav.startsWith("be")) return "be";
-  return nav.startsWith("ru") ? "ru" : "en";
+  if (nav.startsWith("ru")) return inBelarus() ? "be" : "ru";
+  return "en";
 }
 
 export let lang = detectLang();
 document.documentElement.lang = lang;
+// Someone who came to /ru/ or /be/ from search keeps that language on the next pages.
+if (pageLang && !savedLang()) {
+  try { localStorage.setItem(KEY, pageLang); } catch (_) { /* ignore */ }
+}
+
+export function landingPath(code = lang) {
+  return code === "en" ? "/" : `/${code}/`;
+}
 
 export function setLang(next) {
   if (!DICTS[next]) return;
@@ -54,7 +77,7 @@ export function tn(key, n) {
     return fill(forms[cat] || forms.other, { n });
   }
   if (lang === "en") {
-    const one = { items: "{n} item", claimed: "{n} claimed" }[key];
+    const one = { items: "{n} item", claimed: "{n} reserved" }[key];
     if (n === 1 && one) return fill(one, { n });
   }
   return t(`share.${key}`, { n });

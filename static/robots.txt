@@ -1,7 +1,0 @@
-User-agent: *
-Disallow: /w/
-Disallow: /api/
-Disallow: /media/
-Disallow: /lists/
-Disallow: /me
-Disallow: /admin

@@ -88,21 +88,21 @@ with sync_playwright() as p:
     anika = f"anika{random.randint(1000,9999)}"
     g.fill("#display_name", "Anika"); g.fill("#username", anika); g.fill("#password", "password123")
     g.click("button[type=submit]")
-    g.wait_for_url("**/w/*"); g.wait_for_selector("text=Claimed by you")
+    g.wait_for_url("**/w/*"); g.wait_for_selector("text=Reserved by you")
     g.locator(".row").nth(0).locator(".btn-claim").click()
     g.wait_for_selector("#cl-note"); g.click(".dialog button[type=submit]"); g.wait_for_selector(".toast")
     g.wait_for_selector(".row.is-claimed")
     g.screenshot(path=f"{S}/08_guest_claimed.png", full_page=True)
-    g.click("label.seg-opt:has-text('Claimed')")
+    g.click("label.seg-opt:has-text('Reserved')")
     assert g.locator(".row").count() == 1
     g.click("label.seg-opt:has-text('All')")
     # a stale page picks up a claim made elsewhere when it becomes visible again, and refuses to double-claim
     watcher = browser.new_context(viewport={"width": 1200, "height": 900}).new_page(); attach(watcher, "watcher")
     watcher.goto(share_url); watcher.wait_for_selector(".rows .row")
-    assert "Claim" in watcher.locator(".row").nth(2).locator(".btn-claim").inner_text()
+    assert "Reserve" in watcher.locator(".row").nth(2).locator(".btn-claim").inner_text()
     g.locator(".row").nth(2).locator(".btn-claim").click(); g.wait_for_selector("#cl-note"); g.click(".dialog button[type=submit]"); g.wait_for_selector(".toast")
     watcher.evaluate("() => { Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); }")
-    watcher.wait_for_selector(".row >> nth=2 >> text=claimed")
+    watcher.wait_for_selector(".row >> nth=2 >> text=reserved")
     watcher.locator(".row").nth(2).locator(".btn-claim").click()  # unlimited item: still claimable -> dialog opens
     watcher.wait_for_selector("#cl-note"); watcher.keyboard.press("Escape")
     g.locator(".row").nth(2).locator(".row-main").click(); g.wait_for_selector(".dialog .detail")  # unlimited items are undone from the detail card
@@ -120,7 +120,8 @@ with sync_playwright() as p:
     g2 = browser.new_context(viewport={"width": 390, "height": 800}).new_page(); attach(g2, "guest2")
     g2.goto(share_url); g2.wait_for_selector(".rows .row")
     assert "Anika" not in g2.content()  # other guests never see who claimed
-    assert "1 of 2 claimed" in g2.locator(".row").nth(1).inner_text()
+    assert "1 of 2 reserved" in g2.locator(".row").nth(1).inner_text()
+    assert g2.locator(".made-with a").get_attribute("href") == "/"
     g2.screenshot(path=f"{S}/09_mobile.png", full_page=True)
     g2.locator(".row").nth(1).locator(".btn-claim").click(); g2.wait_for_selector("#cl-note")
     g2.screenshot(path=f"{S}/10_mobile_claim.png")
@@ -131,9 +132,19 @@ with sync_playwright() as p:
     page.goto(BASE + "/me"); page.select_option(".lang-switch", "ru"); page.wait_for_selector("text=Мои списки")
     page.screenshot(path=f"{S}/12_ru.png")
     page.select_option(".lang-switch", "be"); page.wait_for_selector("text=Мае спісы")
-    page.goto(BASE + "/"); page.wait_for_selector("text=Проста вішліст.")
+    page.goto(BASE + "/"); page.wait_for_url("**/be/"); page.wait_for_selector("text=Проста вішліст.")  # saved choice wins
     page.screenshot(path=f"{S}/13_be.png")
-    page.select_option(".lang-switch", "en")
+    page.select_option(".lang-switch", "en"); page.wait_for_url(BASE + "/"); page.wait_for_selector("text=Just a wishlist.")
+    # first visit to "/": the browser language decides, a Russian browser in Minsk gets Belarusian, the switcher overrides both
+    for locale, tz, want in [("ru-RU", "Europe/Moscow", "/ru/"), ("ru-RU", "Europe/Minsk", "/be/"), ("en-US", "Europe/Minsk", "/")]:
+        v = browser.new_context(locale=locale, timezone_id=tz).new_page(); attach(v, f"visitor-{locale}-{tz}")
+        v.goto(BASE + "/"); v.wait_for_selector("nav.nav")
+        assert v.url == BASE + want, (locale, tz, v.url)
+        if want == "/be/":
+            v.select_option(".lang-switch", "ru"); v.wait_for_url("**/ru/")
+            v.goto(BASE + "/"); v.wait_for_url("**/ru/"); v.wait_for_selector("text=Просто вишлист.")
+            v.screenshot(path=f"{S}/13b_ru_landing.png", full_page=True)
+        v.context.close()
     # theme: follows the OS by default, the switch overrides and persists
     bg = lambda pg: pg.evaluate("getComputedStyle(document.body).backgroundColor")
     page.emulate_media(color_scheme="light"); page.goto(BASE + "/me"); page.wait_for_selector(".grid-cards")
@@ -178,7 +189,7 @@ with sync_playwright() as p:
     assert "Anika" in adm.locator(".dialog").inner_text()  # admin sees guest claims
     adm.screenshot(path=f"{S}/15_admin_list_detail.png")
     adm.keyboard.press("Escape")
-    adm.click("label.seg-opt:has-text('Claims')"); adm.wait_for_selector("table.table th:has-text('Guest')")
+    adm.click("label.seg-opt:has-text('Reservations')"); adm.wait_for_selector("table.table th:has-text('Guest')")
     assert "Anika" in adm.locator("table.table").inner_text()
     adm.click("label.seg-opt:has-text('Lists')"); adm.wait_for_selector("table.table th:has-text('Owner')")
     adm.locator("table.table .actions .btn-danger").first.click(); adm.wait_for_selector(".dialog")

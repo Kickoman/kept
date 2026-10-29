@@ -1,5 +1,5 @@
 import { api, ApiError, getMe } from "../api.js";
-import { t, timeAgo, tn } from "../i18n.js";
+import { landingPath, t, timeAgo, tn } from "../i18n.js";
 import { clear, el, errorText, field, icon, initial, nav, openDialog, setTitle, stepper, thumb, toast } from "../ui.js";
 
 const app = document.getElementById("app");
@@ -117,6 +117,7 @@ function render() {
   const visible = items.filter((it) => filter === "all" || (filter === "available" ? !isFull(it) : isFull(it)));
   if (!items.length) main.append(el("div.empty", t("share.empty")));
   else main.append(el("div.rows", visible.map(row)));
+  main.append(el("p.made-with", el("a", { href: landingPath() }, t("share.make_own"))));
 }
 
 function segOpt(value, label) {

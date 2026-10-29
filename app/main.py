@@ -7,8 +7,11 @@ from urllib.parse import urlsplit
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import http_exception_handler
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .config import get_settings
 from .db import SessionLocal
@@ -122,6 +125,17 @@ api.include_router(admin.router)
 app.include_router(api)
 app.include_router(pages.router)
 
+
+@app.exception_handler(StarletteHTTPException)
+async def not_found_page(request: Request, exc: StarletteHTTPException):
+    """Unknown pages get the HTML 404 page; the API keeps its JSON errors."""
+    if exc.status_code == 404 and not request.url.path.startswith("/api/"):
+        return FileResponse(STATIC_DIR / "404.html", status_code=404, media_type="text/html")
+    return await http_exception_handler(request, exc)
+
+
+# Images and other already-compressed types are skipped by default.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Added last so it wraps everything, including the CSRF middleware above:
 # rejected requests are logged like any other.
 app.add_middleware(RequestLogMiddleware)

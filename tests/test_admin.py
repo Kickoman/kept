@@ -109,10 +109,9 @@ def test_password_reset_logout_and_guards(client: TestClient, user: dict):
     assert root.patch(f"/api/admin/users/{me['id']}", json={"is_admin": False}).status_code == 200
 
 
-def test_admin_page_and_robots(anon: TestClient):
+def test_admin_page_is_noindex(anon: TestClient):
     r = anon.get("/admin")
     assert r.status_code == 200 and r.headers["x-robots-tag"].startswith("noindex")
-    assert "Disallow: /admin" in anon.get("/robots.txt").text
 
 
 def test_ai_settings_roundtrip_and_masking(client: TestClient, wishlist: dict, monkeypatch):

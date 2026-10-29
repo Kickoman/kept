@@ -1,18 +1,21 @@
-# Kept — a wishlist with a private link and quiet bookings
+# Kept
 
-The owner signs up, creates a list and fills it with wishes: a title, a description, a photo and a link. Paste a link and the rest is filled in automatically. The list lives at a secret URL that search engines don't index. Friends open it without an account, and when they want to book a gift they sign in and it is reserved under their name. The owner never sees who booked what, or whether anything is booked at all.
+A self-hosted wishlist. Friends reserve gifts from your list, and you don't see what's been reserved.
+
+The owner signs up, creates a list and fills it with wishes: a title, a description, a photo and a link. Paste a link and the rest is filled in automatically. The list lives at a secret URL that search engines don't index. Friends open it without an account, and when they want to reserve a gift they sign in and it is reserved under their name. The owner never sees who reserved what, or whether anything is reserved at all.
 
 - Private share links (128-bit token, can be regenerated), `noindex` everywhere it matters.
-- Bookings are hidden from the owner; guests see how much of an item is taken, but not by whom.
-- Quantity limits are enforced transactionally, so two guests can't book the last item at once.
+- Reservations are hidden from the owner; guests see how much of an item is taken, but not by whom.
+- Quantity limits are enforced transactionally, so two guests can't reserve the last item at once.
 - Link import: page metadata (Open Graph, JSON-LD), optionally polished by an LLM; optional AI-generated product photos.
-- Admin panel: users, lists, items, bookings, sessions, AI provider settings, media cleanup.
+- Admin panel: users, lists, items, reservations, sessions, AI provider settings, media cleanup.
 - UI in English, Russian and Belarusian; light and dark themes.
+- A landing page per language, rendered on the server, with a sitemap, hreflang links and Open Graph previews.
 
 ## Stack
 
 - **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0 + Alembic, SQLite (Postgres should only need a different `DATABASE_URL`).
-- **Frontend:** static HTML and vanilla JS (ES modules), no build step. i18n: en / ru / be. Design tokens in `static/css/tokens.css`.
+- **Frontend:** static HTML and vanilla JS (ES modules), no build step. i18n: en / ru / be. Design tokens in `static/css/tokens.css`. The landing pages are the exception: `app/landing.py` renders them on the server.
 - **AI (optional):** providers behind the `TextProvider` / `ImageProvider` interfaces in `app/services/ai_providers.py`. Text: Anthropic or Yandex Cloud (YandexGPT Lite). Images: Yandex Cloud. Configured in the admin panel. Without a provider, link import still works from page metadata.
 - **Runtime:** Docker + `docker compose`; the database and media live in `./data` on the host.
 
@@ -72,9 +75,10 @@ app/
   db.py            engine; for sqlite: WAL, foreign_keys, busy_timeout, BEGIN IMMEDIATE
   models.py        User, UserSession, Wishlist, Item, Booking, AppSetting
   logging_setup.py JSON logging and the request-log middleware
+  landing.py       landing pages (/, /ru/, /be/), sitemap.xml and robots.txt
   routers/         auth, wishlists, items, public (guest API), ai, admin, pages (HTML)
   services/        linkfetch (safe fetch), enrich, ai_providers, ai_settings, images, bookings, ratelimit
-static/            HTML shells, css/, js/ (api.js, ui.js, i18n.js, pages/*)
+static/            HTML shells, css/, img/ (icons, preview images), js/ (api.js, ui.js, i18n.js, pages/*)
 alembic/           migrations (batch mode for sqlite)
 tests/             pytest + tests/e2e_ui.py (Playwright)
 ```
@@ -83,7 +87,8 @@ Key decisions:
 
 - **Bookings are hidden from the owner.** `GET /api/w/{token}` recognises the owner by session and doesn't load bookings at all. The owner's edits are never validated against bookings (an error would give them away); deleting an item cascades to its bookings.
 - **Guests see totals, not names.** For everyone else the public API returns how many of each item are taken plus the viewer's own bookings, so they can cancel them.
-- **Private links.** The share token is 128 bits (`secrets.token_urlsafe(16)`) and can be regenerated. `X-Robots-Tag: noindex` on `/w/*`, `/api/*`, `/media/*`, `/admin`, plus `robots.txt` and `<meta name=robots>`. Hiding is best effort: nothing stops the owner from opening the link in a private window.
+- **Private links.** The share token is 128 bits (`secrets.token_urlsafe(16)`) and can be regenerated. `X-Robots-Tag: noindex` on `/w/*`, `/api/*`, `/media/*`, `/admin`, plus `<meta name=robots>`. `robots.txt` deliberately doesn't block `/w/` for search engines, because a crawler only sees `noindex` on pages it may fetch; crawlers that collect AI training data are kept away from `/w/` instead. Hiding is best effort: nothing stops the owner from opening the link in a private window.
+- **Languages.** The landing has one URL per language (`/`, `/ru/`, `/be/`) with `hreflang` links, so search engines see every version. Visitors who open `/` are sent to their language: the choice made with the language switcher wins, otherwise the browser language decides, and a Russian browser in the `Europe/Minsk` time zone gets Belarusian. The rest of the UI is translated in the browser by the same rules.
 - **Only registered users can book.** The list opens without an account. Pressing "Book" sends a guest to sign in or register, and the booking is placed automatically afterwards (the dialog state waits in `localStorage` as `kept.pendingClaim`). The guest's name comes from their profile. A booking can be cancelled by its author from any device and by an administrator.
 - **Quantity limits** are checked in a transaction holding the write lock (`BEGIN IMMEDIATE`), so concurrent bookings can't oversell (there is a threaded test for this).
 - **SSRF guard** for every outgoing request (`services/linkfetch.py`): http/https only, private/loopback/link-local addresses refused, redirects followed manually and re-checked, response size capped while streaming.

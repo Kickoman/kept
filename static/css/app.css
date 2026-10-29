@@ -198,6 +198,16 @@ textarea.input { min-height: 72px; resize: vertical; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
 .steps .card { padding: var(--space-6); gap: var(--space-3); }
 .steps .num { font-size: 11px; letter-spacing: 0.1em; color: var(--color-accent); }
+ol.steps { list-style: none; margin: 0; padding: 0; }
+.nav-slot { min-height: 58.4px; } /* the header is drawn by JS; keep its room so the page doesn't jump */
+.landing-section { padding-top: 48px; display: flex; flex-direction: column; gap: var(--space-6); }
+.landing-section h2 { font-size: 26px; margin: 0; }
+.faq { max-width: 720px; }
+.faq h3 { font-size: 17px; margin: 0 0 var(--space-2); }
+.faq p { margin: 0; color: var(--text-65); text-wrap: pretty; }
+.made-with { margin: var(--space-8) 0 0; font-size: 13px; color: var(--text-50); }
+.made-with a { color: inherit; }
+.made-with a:hover { color: var(--color-accent); }
 .lang-switch { font-size: 12px; letter-spacing: 0.06em; }
 .claimed-by-you { color: var(--color-accent-300); }
 .checkbox { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--text-70); }

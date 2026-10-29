@@ -1,7 +1,6 @@
 export default {
   brand: "Kept",
   nav: { start: "Создать список", signin: "Войти", mylists: "Мои списки", signout: "Выйти" },
-  landing: { title: "Просто вишлист." },
   auth: {
     login_title: "Вход", register_title: "Создать аккаунт",
     username: "Логин", password: "Пароль", display_name: "Ваше имя",
@@ -55,6 +54,7 @@ export default {
     how_many: "Сколько", claimed_ok: "Забронировано", undone: "Бронь отменена",
     err_not_enough: "Не успели — осталось только {n}.", err_gone: "Этой брони уже нет.", already_taken: "Только что забронировали.", owner_cannot: "Нельзя бронировать в своём списке.",
     login_to_claim: "Чтобы забронировать, нужно войти. Владелец не узнает, кто это сделал.", login_and_claim: "Войти и забронировать", claimed_after_login: "Забронировано",
+    make_own: "Сделать свой вишлист",
     ago: { now: "только что" },
   },
   plural: {
@@ -62,7 +62,7 @@ export default {
     claimed: { one: "{n} занято", few: "{n} заняты", many: "{n} занято", other: "{n} занято" },
   },
   profile: {
-    title: "Профиль", open: "Профиль", name: "Ваше имя", name_hint: "Его видят другие гости, когда вы бронируете подарок.",
+    title: "Профиль", open: "Профиль", name: "Ваше имя", name_hint: "Показывается на ваших списках.",
     change_password: "Сменить пароль", current: "Текущий пароль", new: "Новый пароль",
     save: "Сохранить", saved: "Сохранено", password_changed: "Пароль изменён",
     err_wrong: "Текущий пароль неверный.", err_short: "Не меньше 8 символов.",

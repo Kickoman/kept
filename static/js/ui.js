@@ -1,5 +1,5 @@
 import { api, getMe } from "./api.js";
-import { LANGS, lang, setLang, t } from "./i18n.js";
+import { LANGS, lang, landingPath, setLang, t } from "./i18n.js";
 import { cycleTheme, getTheme } from "./theme.js";
 
 /** el("div.card", {onclick}, child, "text") — tiny DOM builder; strings become text nodes (safe). */
@@ -139,7 +139,12 @@ export function thumb(imageUrl, size = "", labelText = null) {
 export function langSwitch() {
   const select = el("select.lang-switch", {
     "aria-label": "Language",
-    onchange: () => { setLang(select.value); location.reload(); },
+    onchange: () => {
+      setLang(select.value);
+      // The landing has one URL per language; everywhere else the page re-renders in place.
+      if (document.documentElement.dataset.pageLang) location.href = landingPath(select.value);
+      else location.reload();
+    },
   }, LANGS.map((code) => el("option", { value: code, selected: code === lang }, code.toUpperCase())));
   return select;
 }
@@ -174,7 +179,7 @@ export async function nav({ active = null } = {}) {
     items.push(el("a.btn.btn-secondary", { href: "/register" }, t("nav.start")));
   }
   items.push(themeSwitch(), langSwitch());
-  return el("nav.nav", [el("a.nav-brand", { href: "/" }, [icon("bookmark-simple"), t("brand")]), ...items]);
+  return el("nav.nav", [el("a.nav-brand", { href: landingPath() }, [icon("bookmark-simple"), t("brand")]), ...items]);
 }
 
 export function errorText(err) {
