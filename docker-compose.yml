@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        # Match the host user so ./data stays editable without sudo (see .env).
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+    image: kept-wishlist
+    container_name: wishlist
+    restart: unless-stopped
+    ports:
+      # Bound to localhost: a reverse proxy terminates TLS and proxies here. Port comes from .env.
+      - "127.0.0.1:${PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_DIR: /data
+      DATABASE_URL: sqlite:////data/wishlist.db
+      SERVICE_NAME: wishlist
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    labels:
+      # Opt-in marker for log collectors that select containers by label; harmless otherwise.
+      logging: "true"
+    logging:
+      driver: json-file
+      options:
+        # Local safety net: if the collector is down, logs still rotate
+        # instead of filling the disk.
+        max-size: "50m"
+        max-file: "3"
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
