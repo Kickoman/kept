@@ -91,7 +91,7 @@ export default {
     ai_key_ph: "пуста — пакінуць ранейшы", ai_clear_key: "выдаліць ключ", ai_folder: "Ідэнтыфікатар каталога", ai_text_model: "Мадэль для тэксту", ai_art_model: "Мадэль для карцінак", ai_model: "Мадэль",
     ai_save: "Захаваць", ai_test: "Праверыць", ai_testing: "Правяраем…", ai_saved: "Налады захаваны", ai_ready: "гатовы", ai_not_ready: "не наладжаны",
     ai_hint: "Yandex: сэрвіснаму акаўнту патрэбныя ролі ai.languageModels.user (тэкст) і ai.imageGeneration.user (карцінкі), API-ключу — вобласці yc.ai.languageModels.execute і yc.ai.imageGeneration.execute; ідэнтыфікатар каталога пачынаецца з b1g. Карцінкі — Alice AI ART (aliceai-image-art-3.0). Ключы захоўваюцца ў базе.",
-    media_title: "Медыя-файлы", media_stats: "{files} файлаў · {size}. Не прывязаныя ні да аднаго жадання: {orphans} ({osize}).",
+    media_title: "Медыяфайлы", media_stats: "{files} файлаў · {size}. Не прывязаныя ні да аднаго жадання: {orphans} ({osize}).",
     media_hint: "Згенераваныя карцінкі пішуцца на дыск да захавання жадання, таму лішнія назапашваюцца. Файлы старэйшыя за суткі, якія ніхто не выкарыстоўвае, выдаляюцца аўтаматычна раз на суткі; кнопка робіць гэта зараз.",
     media_sweep: "Выдаліць невыкарыстаныя", media_confirm: "Выдаліць {n} невыкарыстаных файлаў ({size})?", media_done: "Выдалена {n} файлаў, вызвалена {size}",
     done: "Гатова", deleted: "Выдалена",
